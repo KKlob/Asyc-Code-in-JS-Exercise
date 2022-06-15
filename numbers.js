@@ -12,30 +12,23 @@ function create_paragraph(text) {
     $('#part1').append($p);
 }
 
-let get_four_facts = new Promise(function (resolve, reject) {
-    // gets four random facts about num. Returns an array of strings
-
-    let resp_array = new Array;
-    let fact_array = new Array;
-    while (resp_array.length < 4) {
-        resp_array.push(axios.get(base_url + randNum));
+function buildPromiseArray() {
+    // Builds array of promises to get four random facts. Returns array of promises.
+    let promArr = new Array;
+    while (promArr.length < 4) {
+        promArr.push(axios.get(base_url + randNum));
     }
-    Promise.all(resp_array)
-        .then(respArray => {
-            respArray.forEach(item => {
-                fact_array.push(item.data);
-            })
-            resolve(fact_array);
-        })
-        .catch(err => {
-            reject("Rejected!", err);
-        });
-});
+    return promArr;
+}
 
-get_four_facts
-    .then(facts => {
-        facts.forEach(item => create_paragraph(item));
-    })
-    .catch(err => {
-        console.log(err);
-    });
+async function get_four_facts() {
+    // Gets four random facts about num. returns an array of strings
+    try {
+        let promArr = await Promise.all(buildPromiseArray());
+        promArr.forEach(item => create_paragraph(item.data));
+    } catch (e) {
+        console.log("Rejected!", e);
+    }
+}
+
+get_four_facts();
